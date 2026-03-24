@@ -33,23 +33,6 @@ pipeline {
             }
         }
 
-        stage('External API Credential Check') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'another-test-usernamepass',
-                                                  usernameVariable: 'USER',
-                                                  passwordVariable: 'PASS')]) {
-                    sh 'curl -u $USER:$PASS https://some-api/'
-                }
-            }
-            post {
-                always {
-                    script {
-                        notifySlack('External API Credential Check', currentBuild.currentResult ?: 'SUCCESS')
-                    }
-                }
-            }
-        }
-
         stage('Backend Unit Tests') {
             steps {
                 dir('backend') {
@@ -250,6 +233,11 @@ curl -fsS "http://localhost:${FRONTEND_HOST_PORT}/" >/dev/null
 
         stage('Deploy To Kubernetes') {
             steps {
+                withCredentials([usernamePassword(credentialsId: 'another-test-usernamepass',
+                                                  usernameVariable: 'USER',
+                                                  passwordVariable: 'PASS')]) {
+                    sh 'curl -u $USER:$PASS https://some-api/'
+                }
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     sh "kubectl apply -f k8s/namespace.yaml"
                     sh "kubectl apply -f k8s/mysql.yaml"
