@@ -15,6 +15,8 @@ pipeline {
         SONARQUBE_SERVER = 'sonarqube-server'
         SONAR_PROJECT_KEY = 'three-tier-app'
         TRIVY_SEVERITY = 'HIGH,CRITICAL'
+        TRIVY_DISABLE_VEX_NOTICE = 'true'
+        TRIVY_CACHE_DIR = '.trivycache'
     }
 
     stages {
