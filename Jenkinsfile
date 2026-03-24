@@ -191,6 +191,46 @@ docker version
             }
         }
 
+        stage('Docker Compose Integration Test') {
+            steps {
+                sh '''#!/bin/bash
+set -e
+PROJECT_NAME="ci-${BUILD_NUMBER}"
+BACKEND_PORT=$((20000 + BUILD_NUMBER % 10000))
+FRONTEND_PORT=$((30000 + BUILD_NUMBER % 10000))
+
+export COMPOSE_PROJECT_NAME="${PROJECT_NAME}"
+export BACKEND_HOST_PORT="${BACKEND_PORT}"
+export FRONTEND_HOST_PORT="${FRONTEND_PORT}"
+
+cleanup() {
+  docker compose down -v --remove-orphans || true
+}
+
+trap cleanup EXIT
+
+docker compose up -d --build
+
+for i in {1..30}; do
+  if curl -fsS "http://localhost:${BACKEND_HOST_PORT}/api/notes" >/dev/null; then
+    break
+  fi
+  sleep 5
+done
+
+curl -fsS "http://localhost:${BACKEND_HOST_PORT}/api/notes" >/dev/null
+curl -fsS "http://localhost:${FRONTEND_HOST_PORT}/" >/dev/null
+'''
+            }
+            post {
+                always {
+                    script {
+                        notifySlack('Docker Compose Integration Test', currentBuild.currentResult ?: 'SUCCESS')
+                    }
+                }
+            }
+        }
+
         stage('Deploy To Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {

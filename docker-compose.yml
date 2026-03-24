@@ -1,7 +1,6 @@
 services:
   db:
     image: mysql:8.4
-    container_name: devops-db
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: devopsdb
@@ -21,7 +20,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: devops-backend
     restart: unless-stopped
     environment:
       SERVER_PORT: 8081
@@ -32,18 +30,17 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "8081:8081"
+      - "${BACKEND_HOST_PORT:-8081}:8081"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: devops-frontend
     restart: unless-stopped
     depends_on:
       - backend
     ports:
-      - "8080:80"
+      - "${FRONTEND_HOST_PORT:-8080}:80"
 
 volumes:
   db_data:
