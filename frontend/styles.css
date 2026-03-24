@@ -1,0 +1,104 @@
+:root {
+  --bg: #f3efe7;
+  --surface: #fffaf2;
+  --text: #222222;
+  --accent: #b3402f;
+  --accent-dark: #7f2b20;
+  --line: #e6d8c6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 10% 15%, #fff6df 0%, var(--bg) 45%),
+              radial-gradient(circle at 90% 0%, #f5cfb3 0%, transparent 35%);
+  min-height: 100vh;
+}
+
+.container {
+  width: min(900px, 92vw);
+  margin: 3rem auto;
+  display: grid;
+  gap: 1.2rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.subtitle {
+  margin-top: 0.3rem;
+  max-width: 60ch;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  padding: 1rem 1.2rem;
+  box-shadow: 0 8px 30px rgba(80, 50, 30, 0.08);
+}
+
+form {
+  display: grid;
+  gap: 0.6rem;
+}
+
+input,
+textarea {
+  border: 1px solid #d4bea2;
+  border-radius: 10px;
+  padding: 0.65rem;
+  font: inherit;
+  background: #fff;
+}
+
+button {
+  border: none;
+  width: fit-content;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-dark);
+}
+
+.note {
+  border-bottom: 1px dashed var(--line);
+  padding: 0.8rem 0;
+}
+
+.note:last-child {
+  border-bottom: none;
+}
+
+.note-title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.note-content {
+  margin: 0.3rem 0 0;
+}
+
+#status {
+  min-height: 1.3rem;
+}
+
+@media (max-width: 640px) {
+  .container {
+    margin: 1.5rem auto;
+  }
+}
