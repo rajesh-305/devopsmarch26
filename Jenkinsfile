@@ -58,6 +58,34 @@ pipeline {
             }
         }
 
+        stage('Docker Daemon Check') {
+            steps {
+                sh '''#!/bin/bash
+set -e
+if ! command -v docker >/dev/null 2>&1; then
+  echo "Docker CLI is not installed on this Jenkins agent."
+  exit 1
+fi
+
+if ! docker version >/dev/null 2>&1; then
+  echo "Jenkins cannot access Docker daemon."
+  echo "Fix by adding jenkins user to docker group and restarting Jenkins agent."
+  echo "Linux host example: sudo usermod -aG docker jenkins && sudo systemctl restart jenkins"
+  exit 1
+fi
+
+docker version
+'''
+            }
+            post {
+                always {
+                    script {
+                        notifySlack('Docker Daemon Check', currentBuild.currentResult ?: 'SUCCESS')
+                    }
+                }
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
                 script {
@@ -80,6 +108,7 @@ pipeline {
                     sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
                     sh "docker push ${BACKEND_IMAGE}:${IMAGE_TAG}"
                     sh "docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}"
+                    sh 'docker logout || true'
                 }
             }
             post {
