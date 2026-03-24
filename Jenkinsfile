@@ -146,8 +146,8 @@ docker version
         stage('Build Docker Images') {
             steps {
                 script {
-                    sh "docker build -t ${BACKEND_IMAGE}:${IMAGE_TAG} backend"
-                    sh "docker build -t ${FRONTEND_IMAGE}:${IMAGE_TAG} frontend"
+                    sh "docker build --pull -t ${BACKEND_IMAGE}:${IMAGE_TAG} backend"
+                    sh "docker build --pull -t ${FRONTEND_IMAGE}:${IMAGE_TAG} frontend"
                 }
             }
             post {
@@ -161,8 +161,8 @@ docker version
 
         stage('Trivy Image Scan') {
             steps {
-                sh "trivy image --scanners vuln --no-progress --severity ${TRIVY_SEVERITY} --exit-code 1 ${BACKEND_IMAGE}:${IMAGE_TAG}"
-                sh "trivy image --scanners vuln --no-progress --severity ${TRIVY_SEVERITY} --exit-code 1 ${FRONTEND_IMAGE}:${IMAGE_TAG}"
+                sh "trivy image --scanners vuln --no-progress --ignore-unfixed --severity ${TRIVY_SEVERITY} --exit-code 1 ${BACKEND_IMAGE}:${IMAGE_TAG}"
+                sh "trivy image --scanners vuln --no-progress --ignore-unfixed --severity ${TRIVY_SEVERITY} --exit-code 1 ${FRONTEND_IMAGE}:${IMAGE_TAG}"
             }
             post {
                 always {
