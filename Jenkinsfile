@@ -6,12 +6,15 @@ pipeline {
     }
 
     environment {
-        REGISTRY = 'docker.io/your-dockerhub-user'
+        REGISTRY = 'docker.io/dataquaint'
         BACKEND_IMAGE = "${REGISTRY}/devops-backend"
         FRONTEND_IMAGE = "${REGISTRY}/devops-frontend"
         IMAGE_TAG = "${BUILD_NUMBER}"
         KUBE_NAMESPACE = 'devops-app'
         SLACK_CHANNEL = '#bombergame'
+        SONARQUBE_SERVER = 'sonarqube-server'
+        SONAR_PROJECT_KEY = 'three-tier-app'
+        TRIVY_SEVERITY = 'HIGH,CRITICAL'
     }
 
     stages {
@@ -38,6 +41,58 @@ pipeline {
                 always {
                     script {
                         notifySlack('Backend Unit Tests', currentBuild.currentResult ?: 'SUCCESS')
+                    }
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                    dir('backend') {
+                        sh "mvn -B sonar:sonar -DskipTests -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.projectName=three-tier-app"
+                    }
+                }
+            }
+            post {
+                always {
+                    script {
+                        notifySlack('SonarQube Analysis', currentBuild.currentResult ?: 'SUCCESS')
+                    }
+                }
+            }
+        }
+
+        stage('SonarQube Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+            post {
+                always {
+                    script {
+                        notifySlack('SonarQube Quality Gate', currentBuild.currentResult ?: 'SUCCESS')
+                    }
+                }
+            }
+        }
+
+        stage('Trivy Filesystem Scan') {
+            steps {
+                sh '''#!/bin/bash
+set -e
+if ! command -v trivy >/dev/null 2>&1; then
+  echo "Trivy is not installed on this Jenkins agent."
+  exit 1
+fi
+trivy fs --scanners vuln --no-progress --severity ${TRIVY_SEVERITY} --exit-code 1 .
+'''
+            }
+            post {
+                always {
+                    script {
+                        notifySlack('Trivy Filesystem Scan', currentBuild.currentResult ?: 'SUCCESS')
                     }
                 }
             }
@@ -97,6 +152,20 @@ docker version
                 always {
                     script {
                         notifySlack('Build Docker Images', currentBuild.currentResult ?: 'SUCCESS')
+                    }
+                }
+            }
+        }
+
+        stage('Trivy Image Scan') {
+            steps {
+                sh "trivy image --scanners vuln --no-progress --severity ${TRIVY_SEVERITY} --exit-code 1 ${BACKEND_IMAGE}:${IMAGE_TAG}"
+                sh "trivy image --scanners vuln --no-progress --severity ${TRIVY_SEVERITY} --exit-code 1 ${FRONTEND_IMAGE}:${IMAGE_TAG}"
+            }
+            post {
+                always {
+                    script {
+                        notifySlack('Trivy Image Scan', currentBuild.currentResult ?: 'SUCCESS')
                     }
                 }
             }
