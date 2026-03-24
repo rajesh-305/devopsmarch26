@@ -33,6 +33,23 @@ pipeline {
             }
         }
 
+        stage('External API Credential Check') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'another-test-usernamepass',
+                                                  usernameVariable: 'USER',
+                                                  passwordVariable: 'PASS')]) {
+                    sh 'curl -u $USER:$PASS https://some-api/'
+                }
+            }
+            post {
+                always {
+                    script {
+                        notifySlack('External API Credential Check', currentBuild.currentResult ?: 'SUCCESS')
+                    }
+                }
+            }
+        }
+
         stage('Backend Unit Tests') {
             steps {
                 dir('backend') {
