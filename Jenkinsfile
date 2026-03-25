@@ -233,6 +233,7 @@ curl -fsS "http://localhost:${FRONTEND_HOST_PORT}/" >/dev/null
 
         stage('Deploy To Kubernetes') {
             steps
+            {
                     sh "kubectl apply -f k8s/namespace.yaml"
                     sh "kubectl apply -f k8s/mysql.yaml"
                     sh "kubectl apply -f k8s/backend.yaml"
