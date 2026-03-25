@@ -232,13 +232,7 @@ curl -fsS "http://localhost:${FRONTEND_HOST_PORT}/" >/dev/null
         }
 
         stage('Deploy To Kubernetes') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'another-test-usernamepass',
-                                                  usernameVariable: 'USER',
-                                                  passwordVariable: 'PASS')]) {
-                    sh 'curl -u $USER:$PASS https://some-api/'
-                }
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+            steps
                     sh "kubectl apply -f k8s/namespace.yaml"
                     sh "kubectl apply -f k8s/mysql.yaml"
                     sh "kubectl apply -f k8s/backend.yaml"
