@@ -1,5 +1,6 @@
 # 3-Tier Java DevOps Application
-
+# 25th March 2026 
+# Outcome: The project failed at Kubernetes deployment level
 This project contains a 3-tier application:
 
 1. Presentation tier: Nginx serving a static web UI.
