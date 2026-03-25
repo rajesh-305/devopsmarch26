@@ -232,15 +232,13 @@ curl -fsS "http://localhost:${FRONTEND_HOST_PORT}/" >/dev/null
         }
 
         stage('Deploy To Kubernetes') {
-            steps
-            {
-                    sh "kubectl apply -f k8s/namespace.yaml"
-                    sh "kubectl apply -f k8s/mysql.yaml"
-                    sh "kubectl apply -f k8s/backend.yaml"
-                    sh "kubectl apply -f k8s/frontend.yaml"
-                    sh "kubectl -n ${KUBE_NAMESPACE} set image deployment/backend backend=${BACKEND_IMAGE}:${IMAGE_TAG}"
-                    sh "kubectl -n ${KUBE_NAMESPACE} set image deployment/frontend frontend=${FRONTEND_IMAGE}:${IMAGE_TAG}"
-                }
+            steps {
+                sh "kubectl apply -f k8s/namespace.yaml"
+                sh "kubectl apply -f k8s/mysql.yaml"
+                sh "kubectl apply -f k8s/backend.yaml"
+                sh "kubectl apply -f k8s/frontend.yaml"
+                sh "kubectl -n ${KUBE_NAMESPACE} set image deployment/backend backend=${BACKEND_IMAGE}:${IMAGE_TAG}"
+                sh "kubectl -n ${KUBE_NAMESPACE} set image deployment/frontend frontend=${FRONTEND_IMAGE}:${IMAGE_TAG}"
             }
             post {
                 always {
